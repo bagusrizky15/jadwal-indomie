@@ -57,7 +57,7 @@ function renderToday() {
     const kind = iso in holidays ? 'libur holiday' : isWeekend(iso) ? 'weekend' : s;
     const chip = document.createElement('div');
     chip.className = `chip ${kind}${iso === today ? ' today' : ''}`;
-    chip.title = holidays[iso] || '';
+    if (iso in holidays) chip.dataset.tip = iso;
     const d = document.createElement('b');
     d.textContent = +iso.slice(8);
     chip.append(HARI[new Date(toNum(iso) * 864e5).getUTCDay()], d, LABEL[s]);
@@ -89,7 +89,8 @@ function renderMonth() {
     if (st && !weekend) count[st]++;
     const c = document.createElement('div');
     c.className = `cell ${iso in holidays ? 'libur' : weekend ? 'weekend' : st}${iso === today ? ' today' : ''}`; // libur di weekend tetap merah
-    c.title = [LABEL[weekend ? 'libur' : st], holidays[iso]].filter(Boolean).join(': ');
+    if (iso in holidays) c.dataset.tip = iso;
+    else c.title = LABEL[weekend ? 'libur' : st] || '';
     const num = document.createElement('b');
     num.textContent = +iso.slice(8);
     c.append(num);
@@ -158,6 +159,21 @@ $('add').onclick = () => {
   $('paste').value = bad.join('\n');
   render();
 };
+
+// Tooltip libur: satu elemen fixed, supaya tidak terpotong overflow strip.
+const tip = $('tip');
+document.addEventListener('mouseover', (e) => {
+  const el = e.target.closest('[data-tip]');
+  if (!el) return (tip.hidden = true);
+  const iso = el.dataset.tip;
+  tip.replaceChildren(Object.assign(document.createElement('b'), { textContent: holidays[iso] || 'Libur' }), fmt(iso));
+  tip.hidden = false;
+  const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = `${Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8)}px`;
+  tip.style.top = `${r.top - h - 6 < 4 ? r.bottom + 6 : r.top - h - 6}px`; // di atas; kalau mentok, di bawah
+});
+document.documentElement.addEventListener('mouseleave', () => (tip.hidden = true));
+$('strip').addEventListener('scroll', () => (tip.hidden = true));
 
 // roda mouse vertikal -> geser horizontal (trackpad sudah bisa langsung)
 $('strip').onwheel = (e) => {

@@ -113,3 +113,9 @@ h2:first-child { margin-top: 0; }
 #holidays button { color: var(--muted); padding: 2px 8px; }
 #holidays button:hover { color: var(--bad); }
 .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
+
+/* Tooltip libur (posisi diatur JS) */
+#tip { position: fixed; z-index: 10; max-width: 220px; padding: 6px 10px; border-radius: 8px; pointer-events: none;
+  background: var(--fg); color: var(--bg); font-size: 12px; line-height: 1.35; }
+#tip b { display: block; font-size: 13px; color: var(--bg); }
+[data-tip] { cursor: help; }
