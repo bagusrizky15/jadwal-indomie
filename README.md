@@ -24,6 +24,7 @@ Kalender satu bulan dengan warna per status: biru untuk WFH, abu-abu untuk WFO, 
 
 ### Pengaturan
 
+- **Bahasa.** Pilih bahasa tampilan: Bahasa Indonesia (default), English, 简体中文, atau 日本語. Pilihannya diingat.
 - **Pola kerja.** Jumlah hari WFH dan WFO per siklus, masing-masing 1 sampai 20.
 - **Hari WFH saya.** Pilih satu tanggal WFH (harus hari kerja). Hari lain dihitung dari tanggal ini, maju maupun mundur.
 - **Tambah libur.** Tempel daftar libur, satu per baris dengan format `YYYY-MM-DD Label`. Labelnya opsional. Baris yang formatnya salah tetap ada di kolom supaya bisa diperbaiki.

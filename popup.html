@@ -7,9 +7,9 @@
 </head>
 <body>
   <header class="top">
-    <div class="seg" role="group" aria-label="Tampilan">
-      <button data-tab="today">Hari ini</button>
-      <button data-tab="month">Bulan</button>
+    <div class="seg" role="group" aria-label="Tampilan" data-i18n-label="view">
+      <button data-tab="today" data-i18n="today">Hari ini</button>
+      <button data-tab="month" data-i18n="month">Bulan</button>
     </div>
     <div class="actions">
     <button id="theme" class="icon">
@@ -21,7 +21,7 @@
         <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>
       </svg>
     </button>
-    <button data-tab="settings" class="icon" aria-label="Pengaturan" title="Pengaturan">
+    <button data-tab="settings" class="icon" aria-label="Pengaturan" title="Pengaturan" data-i18n-title="settings">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" aria-hidden="true">
         <circle cx="12" cy="12" r="8.5" stroke-width="3" stroke-dasharray="3.34 3.34"/>
         <circle cx="12" cy="12" r="6" stroke-width="3"/>
@@ -37,7 +37,7 @@
       <div id="card-date"></div>
       <div id="card-status"></div>
       <div id="card-sub"></div>
-      <button id="setup" class="primary" hidden>Atur Jadwal WFH</button>
+      <button id="setup" class="primary" data-i18n="setup" hidden>Atur Jadwal WFH</button>
     </div>
     <div id="strip"></div>
     <p id="card-next"></p>
@@ -46,36 +46,39 @@
   <section id="month" hidden>
     <header>
       <strong id="month-title"></strong>
-      <button id="goto-today" class="link">Hari ini</button>
-      <button id="prev" class="icon" aria-label="Bulan sebelumnya">‹</button>
-      <button id="next" class="icon" aria-label="Bulan berikutnya">›</button>
+      <button id="goto-today" class="link" data-i18n="today">Hari ini</button>
+      <button id="prev" class="icon" aria-label="Bulan sebelumnya" data-i18n-label="prevMonth">‹</button>
+      <button id="next" class="icon" aria-label="Bulan berikutnya" data-i18n-label="nextMonth">›</button>
     </header>
     <div id="grid"></div>
     <p id="summary"></p>
   </section>
 
   <section id="settings" hidden>
-    <h2>Pola kerja</h2>
+    <h2 data-i18n="language">Bahasa</h2>
+    <select id="lang" aria-label="Bahasa" data-i18n-label="language"></select>
+
+    <h2 data-i18n="pattern">Pola kerja</h2>
     <div class="row">
-      <label><input type="number" id="wfh" min="1" max="20" step="1"> hari WFH</label>
-      <label><input type="number" id="wfo" min="1" max="20" step="1"> hari WFO</label>
+      <label><input type="number" id="wfh" min="1" max="20" step="1"> <span data-i18n="wfhDays">hari WFH</span></label>
+      <label><input type="number" id="wfo" min="1" max="20" step="1"> <span data-i18n="wfoDays">hari WFO</span></label>
     </div>
-    <p class="hint">Diulang terus; libur dan weekend dilewati.</p>
+    <p class="hint" data-i18n="patternHint">Diulang terus; libur dan weekend dilewati.</p>
 
-    <h2>Hari WFH saya</h2>
-    <input type="date" id="anchor" aria-label="Hari WFH saya">
-    <p class="hint">Hari WFH pertama dalam satu siklus (hari kerja). Boleh diubah kapan saja.</p>
+    <h2 data-i18n="anchor">Hari WFH saya</h2>
+    <input type="date" id="anchor" aria-label="Hari WFH saya" data-i18n-label="anchor">
+    <p class="hint" data-i18n="anchorHint">Hari WFH pertama dalam satu siklus (hari kerja). Boleh diubah kapan saja.</p>
 
-    <h2>Tambah libur</h2>
-    <textarea id="paste" rows="4" aria-label="Daftar libur" placeholder="2026-01-01 Tahun Baru&#10;2026-03-20 Cuti Bersama"></textarea>
-    <p class="hint">Satu per baris: tanggal (YYYY-MM-DD), lalu label opsional.</p>
+    <h2 data-i18n="addHolidays">Tambah libur</h2>
+    <textarea id="paste" rows="4" aria-label="Daftar libur" data-i18n-label="holidayList" placeholder="2026-01-01 Tahun Baru&#10;2026-03-20 Cuti Bersama"></textarea>
+    <p class="hint" data-i18n="pasteHint">Satu per baris: tanggal (YYYY-MM-DD), lalu label opsional.</p>
     <div class="row">
-      <button id="add" class="primary">Tambah</button>
-      <button id="fetch" class="secondary">Fetch dari Internet</button>
+      <button id="add" class="primary" data-i18n="add">Tambah</button>
+      <button id="fetch" class="secondary" data-i18n="fetch">Fetch dari Internet</button>
     </div>
     <p id="msg" role="status"></p>
 
-    <h2>Daftar libur</h2>
+    <h2 data-i18n="holidayList">Daftar libur</h2>
     <ul id="holidays"></ul>
   </section>
 
