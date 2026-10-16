@@ -1,0 +1,115 @@
+/* WFH = biru, libur = merah (konvensi tanggal merah). WFO = tinta netral. Tanpa gradien/glow/bayangan.
+   Radius: 12 kartu, 8 kontrol, lingkaran untuk tanggal. */
+:root {
+  --bg: #fafaf8; --fg: #1c1b19; --muted: #6a675f; --line: #e4e1da; --tile: #efede7;
+  --wfo-bg: #1c1b19; --wfo-fg: #fafaf8;
+  --wfh-bg: #1d4ed8; --wfh-fg: #fff; --red: #b91c1c;
+  --warn-bg: #fdf1d3; --warn-fg: #7a4a06; --bad: #b42318; --good: #2a6b3a;
+}
+/* Tema ikut sistem, kecuali user memilih lewat tombol (data-theme di <html>). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171614; --fg: #f1efe9; --muted: #a3a097; --line: #2f2c28; --tile: #24221f;
+    --wfo-bg: #f1efe9; --wfo-fg: #171614;
+    --wfh-bg: #60a5fa; --wfh-fg: #0b1733; --red: #f87171;
+    --warn-bg: #3a2c0a; --warn-fg: #f6d58a; --bad: #ff8a80; --good: #7fd18f;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171614; --fg: #f1efe9; --muted: #a3a097; --line: #2f2c28; --tile: #24221f;
+  --wfo-bg: #f1efe9; --wfo-fg: #171614;
+  --wfh-bg: #60a5fa; --wfh-fg: #0b1733; --red: #f87171;
+  --warn-bg: #3a2c0a; --warn-fg: #f6d58a; --bad: #ff8a80; --good: #7fd18f;
+}
+* { box-sizing: border-box; }
+body { width: 340px; margin: 0; padding: 12px 14px 16px; background: var(--bg); color: var(--fg);
+  font: 14px/1.45 system-ui, -apple-system, sans-serif; font-variant-numeric: tabular-nums; }
+/* Dibuka sebagai halaman web (bukan popup 340px): taruh di tengah, beri bingkai. */
+@media (min-width: 400px) {
+  html { background: var(--tile); }
+  body { margin: 40px auto; border: 1px solid var(--line); border-radius: 12px; }
+}
+[hidden] { display: none !important; }
+button, input, textarea { font: inherit; color: inherit; background: none; border: 0; border-radius: 8px; padding: 6px 10px; }
+button { cursor: pointer; }
+button:hover:not(:disabled) { background: var(--tile); }
+button:disabled { opacity: .3; cursor: default; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.icon { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; font-size: 20px; line-height: 1; color: var(--muted); }
+.actions { display: flex; gap: 2px; }
+.icon[aria-current="true"] { color: var(--fg); background: var(--tile); }
+
+/* Atas: dua tampilan utama + pengaturan terpisah */
+.top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.seg { display: flex; padding: 3px; border-radius: 10px; background: var(--tile); }
+.seg button { padding: 5px 14px; color: var(--muted); }
+.seg button:hover { background: none; color: var(--fg); }
+.seg button[aria-current="true"] { background: var(--bg); color: var(--fg); font-weight: 600; }
+
+#warn { margin: 0 0 12px; padding: 8px 10px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-fg); font-size: 13px; }
+
+/* Hari ini */
+#card { padding: 18px 20px 20px; border-radius: 12px; background: var(--tile); }
+#card.wfo { background: var(--wfo-bg); color: var(--wfo-fg); }
+#card.wfh { background: var(--wfh-bg); color: var(--wfh-fg); }
+#card-date { font-size: 13px; }
+#card-status { font-size: 60px; font-weight: 800; line-height: 1; letter-spacing: -.03em; margin: 14px 0 6px; }
+#card-sub { min-height: 20px; }
+#card.holiday #card-status { color: var(--red); }
+/* Belum ada anchor: kartu jadi ajakan, bukan tanda strip kosong */
+#card.unset #card-status { font-size: 26px; font-weight: 700; letter-spacing: -.01em; margin: 12px 0 4px; }
+#card.unset #card-sub { color: var(--muted); }
+
+#strip { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 20px) / 6); gap: 4px;
+  margin-top: 10px; padding-bottom: 6px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.chip { scroll-snap-align: start; }
+.chip { text-align: center; padding: 6px 0; border-radius: 8px; font-size: 11px; line-height: 1.3; color: var(--muted); }
+.chip b { display: block; font-size: 15px; color: var(--fg); }
+.chip.today { box-shadow: inset 0 0 0 1.5px var(--fg); color: var(--fg); }
+.chip.weekend b { color: var(--muted); font-weight: 400; }
+.chip.holiday, .chip.holiday b { color: var(--red); }
+.chip.wfh, .chip.wfh b { background: var(--wfh-bg); color: var(--wfh-fg); font-weight: 700; }
+#card-next { margin: 12px 2px 0; color: var(--muted); }
+#card-next b { color: var(--fg); font-weight: 600; }
+
+/* Bulan: WFO = isi tipis, WFH = biru, libur = angka merah, weekend = abu */
+#month header { display: flex; align-items: center; gap: 2px; margin-bottom: 8px; }
+#month-title { flex: 1; font-size: 16px; }
+.link { font-size: 13px; color: var(--muted); }
+#grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 4px; }
+.dow { text-align: center; font-size: 11px; color: var(--muted); padding-bottom: 4px; }
+.cell { height: 40px; display: grid; place-items: center; }
+.cell b, .k { border-radius: 50%; display: grid; place-items: center; }
+.cell b { width: 34px; height: 34px; font-size: 13px; font-weight: 600; }
+.cell.wfo b, .k.wfo { background: var(--tile); }
+.cell.wfh b, .k.wfh { background: var(--wfh-bg); color: var(--wfh-fg); }
+.cell.libur b { color: var(--red); }
+.k.libur { background: var(--red); }
+.cell.weekend b { color: var(--muted); font-weight: 400; }
+.cell.today b { outline: 2px solid var(--fg); outline-offset: 2px; }
+.blank { visibility: hidden; }
+#summary { display: flex; align-items: center; gap: 6px; margin: 12px 2px 0; font-size: 12px; color: var(--muted); }
+.k { width: 12px; height: 12px; font-style: normal; }
+.k:not(:first-child) { margin-left: 8px; }
+
+/* Pengaturan */
+h2 { font-size: 13px; font-weight: 600; margin: 18px 0 6px; }
+h2:first-child { margin-top: 0; }
+#settings input, #settings textarea { display: block; width: 100%; background: var(--tile); }
+#settings input[type=number] { display: inline-block; width: 4em; margin-right: 4px; }
+#settings label { display: flex; align-items: center; }
+.hint { color: var(--muted); font-size: 12px; margin: 5px 0 0; }
+.primary { margin-top: 10px; background: var(--fg); color: var(--bg); font-weight: 600; }
+.primary:hover:not(:disabled) { background: var(--fg); opacity: .85; }
+.row { display: flex; gap: 8px; margin-top: 10px; }
+.row .primary { margin-top: 0; }
+.secondary { background: var(--tile); }
+.secondary:hover:not(:disabled) { background: var(--line); }
+#msg { font-size: 12px; margin: 8px 0 0; min-height: 16px; }
+#holidays { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow: auto; }
+#holidays li { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+#holidays small { color: var(--muted); display: block; }
+#holidays button { color: var(--muted); padding: 2px 8px; }
+#holidays button:hover { color: var(--bad); }
+.empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
