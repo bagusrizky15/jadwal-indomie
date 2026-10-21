@@ -44,7 +44,7 @@ button:disabled { opacity: .3; cursor: default; }
 /* Atas: dua tampilan utama + pengaturan terpisah */
 .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .seg { display: flex; padding: 3px; border-radius: 10px; background: var(--tile); }
-.seg button { padding: 5px 14px; color: var(--muted); }
+.seg button { padding: 5px 10px; color: var(--muted); }
 .seg button:hover { background: none; color: var(--fg); }
 .seg button[aria-current="true"] { background: var(--bg); color: var(--fg); font-weight: 600; }
 
@@ -94,12 +94,31 @@ button:disabled { opacity: .3; cursor: default; }
 .k { width: 12px; height: 12px; font-style: normal; }
 .k:not(:first-child) { margin-left: 8px; }
 
+/* Parkir: Tap In = biru, Flazz = tinta netral; satu hari satu pilihan */
+#parking header { display: flex; align-items: center; gap: 2px; margin-bottom: 8px; }
+#p-title { flex: 1; font-size: 16px; }
+#p-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 4px; }
+.cell.pk { padding: 0; border-radius: 0; }
+.cell.pk:hover { background: none; }
+.cell.pk b { background: none; font-weight: 600; }
+.cell.pk.tapin b, .k.tapin { background: var(--wfh-bg); color: var(--wfh-fg); }
+.cell.pk.flazz b, .k.flazz { background: var(--wfo-bg); color: var(--wfo-fg); }
+.cell.pk.sel b { outline: 2px solid var(--fg); outline-offset: 2px; }
+#p-day { margin: 12px 2px 0; font-size: 13px; color: var(--muted); }
+.pick .secondary { flex: 1; padding: 10px; font-weight: 600; }
+.pick .secondary.on[data-kind="tapin"] { background: var(--wfh-bg); color: var(--wfh-fg); }
+.pick .secondary.on[data-kind="flazz"] { background: var(--wfo-bg); color: var(--wfo-fg); }
+#p-summary { display: flex; align-items: center; gap: 6px; margin: 12px 2px 0; font-size: 12px; color: var(--muted); }
+
 /* Pengaturan */
 h2 { font-size: 13px; font-weight: 600; margin: 18px 0 6px; }
 h2:first-child { margin-top: 0; }
 #settings input, #settings textarea, #settings select { display: block; width: 100%; background: var(--tile); }
 #settings input[type=number] { display: inline-block; width: 4em; margin-right: 4px; }
 #settings label { display: flex; align-items: center; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pair h2 { margin-top: 0; }
+.pair > div { min-width: 0; }
 .hint { color: var(--muted); font-size: 12px; margin: 5px 0 0; }
 .primary { margin-top: 10px; background: var(--fg); color: var(--bg); font-weight: 600; }
 .primary:hover:not(:disabled) { background: var(--fg); opacity: .85; }
@@ -107,11 +126,26 @@ h2:first-child { margin-top: 0; }
 .row .primary { margin-top: 0; }
 .secondary { background: var(--tile); }
 .secondary:hover:not(:disabled) { background: var(--line); }
-#msg { font-size: 12px; margin: 8px 0 0; min-height: 16px; }
-#holidays { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow: auto; }
+#settings textarea { resize: vertical; }
+#msg { font-size: 12px; margin: 6px 0 0; }
+#msg:empty { display: none; }
+.hd { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+.hd h2 { margin: 0; }
+.hd .secondary { padding: 4px 12px; font-size: 13px; }
+#dlg { width: 300px; max-width: calc(100vw - 24px); padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--fg); }
+#dlg::backdrop { background: rgb(0 0 0 / .4); }
+#dlg h2 { margin: 0 0 8px; }
+#dlg textarea { display: block; width: 100%; background: var(--tile); resize: vertical; }
+#dlg #fetch { margin-top: 10px; font-size: 13px; padding: 5px 10px; }
+#dmsg { font-size: 12px; margin: 8px 0 0; }
+#dmsg:empty { display: none; }
+.row.end { justify-content: flex-end; margin-top: 12px; }
+#holidays { margin-top: 8px !important; list-style: none; padding: 0; margin: 0; max-height: 140px; overflow: auto; }
 #holidays li { display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
-#holidays small { color: var(--muted); display: block; }
+  padding: 2px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+#holidays li > span { display: flex; gap: 8px; min-width: 0; align-items: baseline; }
+#holidays li b { flex: none; font-weight: 600; }
+#holidays small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #holidays button { color: var(--muted); padding: 2px 8px; }
 #holidays button:hover { color: var(--bad); }
 .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }

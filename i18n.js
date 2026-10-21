@@ -10,6 +10,8 @@ export const LANGS = {
 export const STR = {
   id: {
     view: 'Tampilan', today: 'Hari ini', month: 'Bulan', settings: 'Pengaturan',
+    holidays: 'Libur', cancel: 'Batal',
+    parking: 'Parkir', tapIn: 'Tap In', flazz: 'Flazz', parkNone: 'Belum dipilih', parkCount: (n) => `${n} hari`,
     lightMode: 'Mode terang', darkMode: 'Mode gelap',
     prevMonth: 'Bulan sebelumnya', nextMonth: 'Bulan berikutnya',
     setup: 'Atur Jadwal WFH', libur: 'Libur',
@@ -44,6 +46,8 @@ export const STR = {
   },
   en: {
     view: 'View', today: 'Today', month: 'Month', settings: 'Settings',
+    holidays: 'Holidays', cancel: 'Cancel',
+    parking: 'Parking', tapIn: 'Tap In', flazz: 'Flazz', parkNone: 'Not chosen', parkCount: (n) => `${n} ${n === 1 ? 'day' : 'days'}`,
     lightMode: 'Light mode', darkMode: 'Dark mode',
     prevMonth: 'Previous month', nextMonth: 'Next month',
     setup: 'Set WFH schedule', libur: 'Holiday',
@@ -78,6 +82,8 @@ export const STR = {
   },
   'zh-CN': {
     view: '视图', today: '今天', month: '月份', settings: '设置',
+    holidays: '假日', cancel: '取消',
+    parking: '停车', tapIn: 'Tap In', flazz: 'Flazz', parkNone: '未选择', parkCount: (n) => `${n} 天`,
     lightMode: '浅色模式', darkMode: '深色模式',
     prevMonth: '上个月', nextMonth: '下个月',
     setup: '设置 WFH 日程', libur: '假日',
@@ -112,6 +118,8 @@ export const STR = {
   },
   ja: {
     view: '表示', today: '今日', month: '月', settings: '設定',
+    holidays: '休日', cancel: 'キャンセル',
+    parking: '駐車', tapIn: 'Tap In', flazz: 'Flazz', parkNone: '未選択', parkCount: (n) => `${n} 日`,
     lightMode: 'ライトモード', darkMode: 'ダークモード',
     prevMonth: '前の月', nextMonth: '次の月',
     setup: 'WFH スケジュールを設定', libur: '休日',

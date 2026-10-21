@@ -10,6 +10,7 @@
     <div class="seg" role="group" aria-label="Tampilan" data-i18n-label="view">
       <button data-tab="today" data-i18n="today">Hari ini</button>
       <button data-tab="month" data-i18n="month">Bulan</button>
+      <button data-tab="parking" data-i18n="parking">Parkir</button>
     </div>
     <div class="actions">
     <button id="theme" class="icon">
@@ -54,9 +55,33 @@
     <p id="summary"></p>
   </section>
 
+  <section id="parking" hidden>
+    <header>
+      <strong id="p-title"></strong>
+      <button id="p-prev" class="icon" aria-label="Bulan sebelumnya" data-i18n-label="prevMonth">‹</button>
+      <button id="p-next" class="icon" aria-label="Bulan berikutnya" data-i18n-label="nextMonth">›</button>
+    </header>
+    <div id="p-grid"></div>
+    <p id="p-day"></p>
+    <div class="row pick">
+      <button id="p-tapin" class="secondary" data-kind="tapin" data-i18n="tapIn">Tap In</button>
+      <button id="p-flazz" class="secondary" data-kind="flazz" data-i18n="flazz">Flazz</button>
+    </div>
+    <p id="p-summary"></p>
+  </section>
+
   <section id="settings" hidden>
-    <h2 data-i18n="language">Bahasa</h2>
-    <select id="lang" aria-label="Bahasa" data-i18n-label="language"></select>
+    <div class="pair">
+      <div>
+        <h2 data-i18n="language">Bahasa</h2>
+        <select id="lang" aria-label="Bahasa" data-i18n-label="language"></select>
+      </div>
+      <div>
+        <h2 data-i18n="anchor">Hari WFH saya</h2>
+        <input type="date" id="anchor" aria-label="Hari WFH saya" data-i18n-label="anchor">
+      </div>
+    </div>
+    <p class="hint" data-i18n="anchorHint">Hari WFH pertama dalam satu siklus (hari kerja). Boleh diubah kapan saja.</p>
 
     <h2 data-i18n="pattern">Pola kerja</h2>
     <div class="row">
@@ -65,22 +90,25 @@
     </div>
     <p class="hint" data-i18n="patternHint">Diulang terus; libur dan weekend dilewati.</p>
 
-    <h2 data-i18n="anchor">Hari WFH saya</h2>
-    <input type="date" id="anchor" aria-label="Hari WFH saya" data-i18n-label="anchor">
-    <p class="hint" data-i18n="anchorHint">Hari WFH pertama dalam satu siklus (hari kerja). Boleh diubah kapan saja.</p>
-
-    <h2 data-i18n="addHolidays">Tambah libur</h2>
-    <textarea id="paste" rows="4" aria-label="Daftar libur" data-i18n-label="holidayList" placeholder="2026-01-01 Tahun Baru&#10;2026-03-20 Cuti Bersama"></textarea>
-    <p class="hint" data-i18n="pasteHint">Satu per baris: tanggal (YYYY-MM-DD), lalu label opsional.</p>
-    <div class="row">
-      <button id="add" class="primary" data-i18n="add">Tambah</button>
-      <button id="fetch" class="secondary" data-i18n="fetch">Fetch dari Internet</button>
+    <div class="hd">
+      <h2 id="count"></h2>
+      <button id="open-add" class="secondary" data-i18n="add">Tambah</button>
     </div>
     <p id="msg" role="status"></p>
-
-    <h2 data-i18n="holidayList">Daftar libur</h2>
     <ul id="holidays"></ul>
   </section>
+
+  <dialog id="dlg" aria-labelledby="dlg-title">
+    <h2 id="dlg-title" data-i18n="addHolidays">Tambah libur</h2>
+    <textarea id="paste" rows="5" aria-label="Daftar libur" data-i18n-label="holidayList" placeholder="2026-01-01 Tahun Baru&#10;2026-03-20 Cuti Bersama"></textarea>
+    <p class="hint" data-i18n="pasteHint">Satu per baris: tanggal (YYYY-MM-DD), lalu label opsional.</p>
+    <button id="fetch" class="secondary" data-i18n="fetch">Fetch dari Internet</button>
+    <p id="dmsg" role="status"></p>
+    <div class="row end">
+      <button id="cancel" data-i18n="cancel">Batal</button>
+      <button id="add" class="primary" data-i18n="add">Tambah</button>
+    </div>
+  </dialog>
 
   <div id="tip" role="tooltip" hidden></div>
 

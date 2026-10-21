@@ -9,8 +9,15 @@ const store = globalThis.chrome?.storage?.sync ?? {
   set: async (v) => localStorage.setItem('jadwal', JSON.stringify({ ...JSON.parse(localStorage.getItem('jadwal') || '{}'), ...v })),
 };
 
+// Parkir terus bertambah tiap hari, jadi di storage.local (sync dibatasi 8KB per item).
+const pstore = globalThis.chrome?.storage?.local ?? {
+  get: async () => JSON.parse(localStorage.getItem('jadwal-parkir') || '{}'),
+  set: async (v) => localStorage.setItem('jadwal-parkir', JSON.stringify(v)),
+};
+
 let { anchor = '', holidays = {}, theme = '', wfh = 1, wfo = 3, lang = 'id' } = await store.get(['anchor', 'holidays', 'theme', 'wfh', 'wfo', 'lang']);
 if (!(lang in STR)) lang = 'id';
+let { parking = {} } = await pstore.get(['parking']); // { 'YYYY-MM-DD': 'tapin' | 'flazz' }
 
 const t = (key, ...args) => {
   const v = STR[lang][key] ?? STR.id[key];
@@ -23,12 +30,14 @@ const dow = (iso) => dt(iso, { weekday: 'short' });
 const today = todayIso();
 const Y0 = +today.slice(0, 4);
 let year = Y0, month = +today.slice(5, 7) - 1;
+let pday = today; // hari yang sedang diedit di tab Parkir
 
 const save = () => store.set({ anchor, holidays, wfh, wfo });
+const savePark = () => pstore.set({ parking });
 const hasHolidays = (y) => Object.keys(holidays).some((d) => d.startsWith(`${y}-`));
 
 function show(tab) {
-  for (const s of ['today', 'month', 'settings']) $(s).hidden = s !== tab;
+  for (const s of ['today', 'month', 'parking', 'settings']) $(s).hidden = s !== tab;
   document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === tab));
   render();
 }
@@ -40,8 +49,9 @@ function render() {
   else if (!hasHolidays(viewYear)) $('warn').textContent = t('warnHolidays', viewYear);
   else $('warn').hidden = true;
   if (!anchor && $('month').hidden) $('warn').hidden = true; // kartu hari ini / pengaturan sudah mengarahkan
+  if (!$('parking').hidden) $('warn').hidden = true;
 
-  renderToday(); renderMonth(); renderSettings();
+  renderToday(); renderMonth(); renderParking(); renderSettings();
 }
 
 function renderToday() {
@@ -107,18 +117,56 @@ function renderMonth() {
     [Object.assign(document.createElement('i'), { className: `k ${k}` }), `${count[k]} ${label(k)}`]));
 }
 
+function renderParking() {
+  const mm = String(month + 1).padStart(2, '0');
+  const ym = `${year}-${mm}`;
+  $('p-title').textContent = dt(`${ym}-01`, { month: 'long', year: 'numeric' });
+  $('p-prev').disabled = $('prev').disabled;
+  $('p-next').disabled = $('next').disabled;
+  if (!pday.startsWith(ym)) pday = ym === today.slice(0, 7) ? today : `${ym}-01`;
+
+  const grid = $('p-grid');
+  const first = toNum(`${ym}-01`);
+  const lead = (new Date(first * 864e5).getUTCDay() + 6) % 7;
+  const monday = toNum('2024-01-01');
+  grid.replaceChildren(...Array.from({ length: 7 }, (_, i) => Object.assign(document.createElement('div'), { className: 'dow', textContent: dow(toIso(monday + i)) })));
+  for (let i = 0; i < lead; i++) grid.append(Object.assign(document.createElement('div'), { className: 'cell blank' }));
+  const count = { tapin: 0, flazz: 0 };
+  for (let n = first; toIso(n).startsWith(ym); n++) {
+    const iso = toIso(n);
+    const kind = parking[iso];
+    if (kind) count[kind]++;
+    const c = document.createElement('button');
+    c.className = `cell pk${kind ? ` ${kind}` : ''}${iso === pday ? ' sel' : ''}${iso === today ? ' today' : ''}`;
+    c.setAttribute('aria-label', `${fmt(iso)}${kind ? `: ${t(kind === 'tapin' ? 'tapIn' : 'flazz')}` : ''}`);
+    c.onclick = () => { pday = iso; renderParking(); };
+    c.append(Object.assign(document.createElement('b'), { textContent: +iso.slice(8) }));
+    grid.append(c);
+  }
+
+  const cur = parking[pday];
+  $('p-day').textContent = `${fmt(pday)} · ${cur ? t(cur === 'tapin' ? 'tapIn' : 'flazz') : t('parkNone')}`;
+  document.querySelectorAll('.pick [data-kind]').forEach((b) => b.classList.toggle('on', b.dataset.kind === cur));
+  // angka muncul setelah ada yang dipilih bulan ini
+  $('p-summary').hidden = !count.tapin && !count.flazz;
+  $('p-summary').replaceChildren(...['tapin', 'flazz'].flatMap((k) =>
+    [Object.assign(document.createElement('i'), { className: `k ${k}` }), `${t(k === 'tapin' ? 'tapIn' : 'flazz')}: ${t('parkCount', count[k])}`]));
+}
+
 function renderSettings() {
   $('anchor').value = anchor;
   $('wfh').value = wfh;
   $('wfo').value = wfo;
   const keys = Object.keys(holidays).sort();
+  $('count').textContent = `${t('holidays')} · ${keys.length}`;
   if (!keys.length) return $('holidays').replaceChildren(Object.assign(document.createElement('li'), { className: 'empty', textContent: t('empty') }));
   $('holidays').replaceChildren(...keys.map((iso) => {
     const li = document.createElement('li');
     const txt = document.createElement('span');
     const small = document.createElement('small');
     small.textContent = holidays[iso] || t('libur');
-    txt.append(fmt(iso), small);
+    txt.title = `${fmt(iso)} · ${small.textContent}`;
+    txt.append(Object.assign(document.createElement('b'), { textContent: dt(iso, { weekday: 'short', day: 'numeric', month: 'short' }) }), small);
     const x = document.createElement('button');
     x.textContent = '✕'; x.setAttribute('aria-label', t('remove', iso));
     x.onclick = () => { delete holidays[iso]; save(); render(); };
@@ -127,15 +175,21 @@ function renderSettings() {
   }));
 }
 
-function msg(text, ok) {
-  $('msg').textContent = text;
-  $('msg').style.color = ok ? 'var(--good)' : 'var(--bad)';
+function msg(text, ok, id = 'msg') {
+  $(id).textContent = text;
+  $(id).style.color = ok ? 'var(--good)' : 'var(--bad)';
 }
 
 document.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => show(b.dataset.tab)));
 const step = (d) => { month += d; year += Math.floor(month / 12); month = (month + 12) % 12; render(); };
-$('prev').onclick = () => step(-1);
-$('next').onclick = () => step(1);
+$('prev').onclick = $('p-prev').onclick = () => step(-1);
+$('next').onclick = $('p-next').onclick = () => step(1);
+
+// Satu hari satu pilihan: klik yang lain mengganti, klik yang sama menghapus.
+document.querySelectorAll('.pick [data-kind]').forEach((b) => (b.onclick = () => {
+  if (parking[pday] === b.dataset.kind) delete parking[pday]; else parking[pday] = b.dataset.kind;
+  savePark(); renderParking();
+}));
 $('goto-today').onclick = () => { year = Y0; month = +today.slice(5, 7) - 1; render(); };
 
 $('anchor').onchange = (e) => {
@@ -155,14 +209,23 @@ for (const id of ['wfh', 'wfo']) $(id).onchange = (e) => {
   save(); msg(t('saved'), true); render();
 };
 
+$('open-add').onclick = () => { msg('', true, 'dmsg'); $('dlg').showModal(); $('paste').focus(); };
+$('cancel').onclick = () => $('dlg').close();
+$('dlg').addEventListener('click', (e) => { if (e.target === $('dlg')) $('dlg').close(); }); // klik di luar kotak
+
 $('add').onclick = () => {
   const { ok, bad } = parseHolidays($('paste').value);
+  const n = Object.keys(ok).length;
+  if (!n && !bad.length) return msg(t('added', 0), false, 'dmsg');
   Object.assign(holidays, ok);
   save();
-  if (anchor && isOff(anchor, holidays)) msg(t('anchorOff'), false);
-  else if (bad.length) msg(t('addedBad', Object.keys(ok).length, bad.join(' | ')), false);
-  else msg(t('added', Object.keys(ok).length), true);
   $('paste').value = bad.join('\n');
+  if (bad.length) msg(t('addedBad', n, bad.join(' | ')), false, 'dmsg'); // tetap terbuka supaya baris salah bisa diperbaiki
+  else {
+    $('dlg').close();
+    if (anchor && isOff(anchor, holidays)) msg(t('anchorOff'), false);
+    else msg(t('added', n), true);
+  }
   render();
 };
 
@@ -201,12 +264,12 @@ $('fetch').onclick = async () => {
     const lines = Object.keys(data)
       .filter((d) => isValidIso(d) && +d.slice(0, 4) >= Y0 && +d.slice(0, 4) <= Y0 + 1 && !(d in holidays))
       .sort().map((d) => `${d} ${data[d].summary ?? ''}`.trim());
-    if (!lines.length) return msg(t('noNew', Y0, Y0 + 1), true);
+    if (!lines.length) return msg(t('noNew', Y0, Y0 + 1), true, 'dmsg');
     $('paste').value = [$('paste').value.trim(), ...lines].filter(Boolean).join('\n');
-    $('paste').rows = 10;
-    msg(t('loaded', lines.length), true);
+    $('paste').rows = 9;
+    msg(t('loaded', lines.length), true, 'dmsg');
   } catch (e) {
-    msg(t('fetchFail', e.message), false);
+    msg(t('fetchFail', e.message), false, 'dmsg');
   } finally {
     btn.disabled = false; btn.textContent = t('fetch');
   }
