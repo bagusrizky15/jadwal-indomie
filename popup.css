@@ -4,6 +4,7 @@
   --bg: #fafaf8; --fg: #1c1b19; --muted: #6a675f; --line: #e4e1da; --tile: #efede7;
   --wfo-bg: #1c1b19; --wfo-fg: #fafaf8;
   --wfh-bg: #1d4ed8; --wfh-fg: #fff; --red: #b91c1c;
+  --tap-bg: #0f766e; --tap-fg: #fff; --flz-bg: #b45309; --flz-fg: #fff;
   --warn-bg: #fdf1d3; --warn-fg: #7a4a06; --bad: #b42318; --good: #2a6b3a;
 }
 /* Tema ikut sistem, kecuali user memilih lewat tombol (data-theme di <html>). */
@@ -12,6 +13,7 @@
     --bg: #171614; --fg: #f1efe9; --muted: #a3a097; --line: #2f2c28; --tile: #24221f;
     --wfo-bg: #f1efe9; --wfo-fg: #171614;
     --wfh-bg: #60a5fa; --wfh-fg: #0b1733; --red: #f87171;
+    --tap-bg: #5eead4; --tap-fg: #042f2e; --flz-bg: #fbbf24; --flz-fg: #1c1917;
     --warn-bg: #3a2c0a; --warn-fg: #f6d58a; --bad: #ff8a80; --good: #7fd18f;
     color-scheme: dark;
   }
@@ -20,6 +22,7 @@
   --bg: #171614; --fg: #f1efe9; --muted: #a3a097; --line: #2f2c28; --tile: #24221f;
   --wfo-bg: #f1efe9; --wfo-fg: #171614;
   --wfh-bg: #60a5fa; --wfh-fg: #0b1733; --red: #f87171;
+    --tap-bg: #5eead4; --tap-fg: #042f2e; --flz-bg: #fbbf24; --flz-fg: #1c1917;
   --warn-bg: #3a2c0a; --warn-fg: #f6d58a; --bad: #ff8a80; --good: #7fd18f;
   color-scheme: dark;
 }
@@ -88,27 +91,26 @@ button:disabled { opacity: .3; cursor: default; }
 .cell.libur b { color: var(--red); }
 .k.libur { background: var(--red); }
 .cell.weekend b { color: var(--muted); font-weight: 400; }
-.cell.today b { outline: 2px solid var(--fg); outline-offset: 2px; }
+.cell.sel b, .cell.today b { outline: 2px solid var(--fg); outline-offset: 2px; }
 .blank { visibility: hidden; }
-#summary { display: flex; align-items: center; gap: 6px; margin: 12px 2px 0; font-size: 12px; color: var(--muted); }
+#summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; margin: 12px 2px 0; font-size: 12px; color: var(--muted); }
+#summary .grp { display: flex; align-items: center; gap: 6px; }
 .k { width: 12px; height: 12px; font-style: normal; }
-.k:not(:first-child) { margin-left: 8px; }
+.k:not(:first-child) { margin-left: 6px; }
 
-/* Parkir: Tap In = biru, Flazz = tinta netral; satu hari satu pilihan */
-#parking header { display: flex; align-items: center; gap: 2px; margin-bottom: 8px; }
-#p-title { flex: 1; font-size: 16px; }
-#p-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 4px; }
-.cell.pk { padding: 0; border-radius: 0; }
-.cell.pk:hover { background: none; }
-.cell.pk b { background: none; font-weight: 600; }
-.cell.pk.tapin b, .k.tapin { background: var(--wfh-bg); color: var(--wfh-fg); }
-.cell.pk.flazz b, .k.flazz { background: var(--wfo-bg); color: var(--wfo-fg); }
-.cell.pk.sel b { outline: 2px solid var(--fg); outline-offset: 2px; }
-#p-day { margin: 12px 2px 0; font-size: 13px; color: var(--muted); }
+/* Parkir di kalender Bulan: lingkaran tetap status kerja, huruf T/F di pojok = catatan parkir.
+   Tap In = teal, Flazz = amber: beda dari biru WFH dan merah libur. */
+.cell[aria-pressed] { position: relative; width: 100%; padding: 0; border-radius: 8px; }
+.cell[aria-pressed]:hover:not(:disabled) { background: none; }
+.cell[aria-pressed]:hover b { box-shadow: inset 0 0 0 1px var(--line); }
+#grid:has(.sel) .cell.today:not(.sel) b { outline: 2px dashed var(--muted); } /* hari ini tetap kelihatan saat hari lain dipilih */
+.cell[data-park]::after, .k[class*="pk-"] { content: attr(data-park); display: grid; place-items: center;
+  width: 14px; height: 14px; border-radius: 4px; font: 700 9px/1 system-ui, sans-serif; }
+.cell[data-park]::after { position: absolute; right: 1px; bottom: 0; }
+.pk-tapin::after, .k.pk-tapin, .pick .secondary.on[data-kind="tapin"] { background: var(--tap-bg); color: var(--tap-fg); }
+.pk-flazz::after, .k.pk-flazz, .pick .secondary.on[data-kind="flazz"] { background: var(--flz-bg); color: var(--flz-fg); }
+#p-day { margin: 14px 2px 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 .pick .secondary { flex: 1; padding: 10px; font-weight: 600; }
-.pick .secondary.on[data-kind="tapin"] { background: var(--wfh-bg); color: var(--wfh-fg); }
-.pick .secondary.on[data-kind="flazz"] { background: var(--wfo-bg); color: var(--wfo-fg); }
-#p-summary { display: flex; align-items: center; gap: 6px; margin: 12px 2px 0; font-size: 12px; color: var(--muted); }
 
 /* Pengaturan */
 h2 { font-size: 13px; font-weight: 600; margin: 18px 0 6px; }

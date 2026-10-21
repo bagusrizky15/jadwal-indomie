@@ -10,7 +10,6 @@
     <div class="seg" role="group" aria-label="Tampilan" data-i18n-label="view">
       <button data-tab="today" data-i18n="today">Hari ini</button>
       <button data-tab="month" data-i18n="month">Bulan</button>
-      <button data-tab="parking" data-i18n="parking">Parkir</button>
     </div>
     <div class="actions">
     <button id="theme" class="icon">
@@ -53,21 +52,13 @@
     </header>
     <div id="grid"></div>
     <p id="summary"></p>
-  </section>
-
-  <section id="parking" hidden>
-    <header>
-      <strong id="p-title"></strong>
-      <button id="p-prev" class="icon" aria-label="Bulan sebelumnya" data-i18n-label="prevMonth">‹</button>
-      <button id="p-next" class="icon" aria-label="Bulan berikutnya" data-i18n-label="nextMonth">›</button>
-    </header>
-    <div id="p-grid"></div>
-    <p id="p-day"></p>
-    <div class="row pick">
-      <button id="p-tapin" class="secondary" data-kind="tapin" data-i18n="tapIn">Tap In</button>
-      <button id="p-flazz" class="secondary" data-kind="flazz" data-i18n="flazz">Flazz</button>
+    <div id="p-edit" hidden>
+      <p id="p-day"></p>
+      <div class="row pick">
+        <button id="p-tapin" class="secondary" data-kind="tapin" data-i18n="tapIn">Tap In</button>
+        <button id="p-flazz" class="secondary" data-kind="flazz" data-i18n="flazz">Flazz</button>
+      </div>
     </div>
-    <p id="p-summary"></p>
   </section>
 
   <section id="settings" hidden>

@@ -27,17 +27,18 @@ const label = (st) => (st === 'libur' ? t('libur') : st.toUpperCase()); // WFO/W
 const dt = (iso, opts) => new Intl.DateTimeFormat(LANGS[lang].locale, { timeZone: 'UTC', ...opts }).format(new Date(toNum(iso) * 864e5));
 const fmt = (iso) => dt(iso, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 const dow = (iso) => dt(iso, { weekday: 'short' });
+const parkName = (k) => t(k === 'tapin' ? 'tapIn' : 'flazz');
 const today = todayIso();
 const Y0 = +today.slice(0, 4);
 let year = Y0, month = +today.slice(5, 7) - 1;
-let pday = today; // hari yang sedang diedit di tab Parkir
+let pday = null; // hari yang dipilih di kalender Bulan; tombol parkir muncul hanya kalau ada
 
 const save = () => store.set({ anchor, holidays, wfh, wfo });
 const savePark = () => pstore.set({ parking });
 const hasHolidays = (y) => Object.keys(holidays).some((d) => d.startsWith(`${y}-`));
 
 function show(tab) {
-  for (const s of ['today', 'month', 'parking', 'settings']) $(s).hidden = s !== tab;
+  for (const s of ['today', 'month', 'settings']) $(s).hidden = s !== tab;
   document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === tab));
   render();
 }
@@ -49,9 +50,8 @@ function render() {
   else if (!hasHolidays(viewYear)) $('warn').textContent = t('warnHolidays', viewYear);
   else $('warn').hidden = true;
   if (!anchor && $('month').hidden) $('warn').hidden = true; // kartu hari ini / pengaturan sudah mengarahkan
-  if (!$('parking').hidden) $('warn').hidden = true;
 
-  renderToday(); renderMonth(); renderParking(); renderSettings();
+  renderToday(); renderMonth(); renderSettings();
 }
 
 function renderToday() {
@@ -97,60 +97,44 @@ function renderMonth() {
   const monday = toNum('2024-01-01'); // hari Senin apa saja, untuk nama hari
   grid.replaceChildren(...Array.from({ length: 7 }, (_, i) => Object.assign(document.createElement('div'), { className: 'dow', textContent: dow(toIso(monday + i)) })));
   for (let i = 0; i < lead; i++) grid.append(Object.assign(document.createElement('div'), { className: 'cell blank' }));
+  const ym = `${year}-${mm}`;
+  if (pday && !pday.startsWith(ym)) pday = null;
   const count = { wfo: 0, wfh: 0, libur: 0 };
-  for (let n = first; toIso(n).startsWith(`${year}-${mm}`); n++) {
+  const pcount = { tapin: 0, flazz: 0 };
+  for (let n = first; toIso(n).startsWith(ym); n++) {
     const iso = toIso(n);
     const st = anchor ? statusOf(iso, anchor, holidays, wfh, wfo) : (isOff(iso, holidays) ? 'libur' : '');
     const weekend = isWeekend(iso);
     if (st && !weekend) count[st]++;
-    const c = document.createElement('div');
-    c.className = `cell ${iso in holidays ? 'libur' : weekend ? 'weekend' : st}${iso === today ? ' today' : ''}`; // libur di weekend tetap merah
+    const kind = parking[iso];
+    if (kind) pcount[kind]++;
+    // Lingkaran = status kerja; huruf T/F di pojok = catatan parkir. Klik untuk memilih hari.
+    const c = document.createElement('button');
+    c.className = `cell ${iso in holidays ? 'libur' : weekend ? 'weekend' : st}${iso === today ? ' today' : ''}${iso === pday ? ' sel' : ''}`; // libur di weekend tetap merah
+    if (kind) { c.dataset.park = kind === 'tapin' ? 'T' : 'F'; c.classList.add(`pk-${kind}`); }
     if (iso in holidays) c.dataset.tip = iso;
     else if (weekend || st) c.title = label(weekend ? 'libur' : st);
+    c.setAttribute('aria-label', `${fmt(iso)}${st ? `, ${label(weekend ? 'libur' : st)}` : ''}${kind ? `, ${parkName(kind)}` : ''}`);
+    c.setAttribute('aria-pressed', iso === pday);
+    c.onclick = () => { pday = pday === iso ? null : iso; renderMonth(); }; // klik lagi = tutup
     const num = document.createElement('b');
     num.textContent = +iso.slice(8);
     c.append(num);
     grid.append(c);
   }
-  $('summary').hidden = !anchor;
-  $('summary').replaceChildren(...['wfh', 'wfo', 'libur'].flatMap((k) =>
-    [Object.assign(document.createElement('i'), { className: `k ${k}` }), `${count[k]} ${label(k)}`]));
-}
+  // Satu baris: status kerja (kalau anchor ada) lalu jumlah parkir (selalu tampil).
+  const span = (items) => { const g = document.createElement('span'); g.className = 'grp'; g.append(...items); return g; };
+  $('summary').replaceChildren(
+    ...(anchor ? [span(['wfh', 'wfo', 'libur'].flatMap((k) =>
+      [Object.assign(document.createElement('i'), { className: `k ${k}` }), `${count[k]} ${label(k)}`]))] : []),
+    span(['tapin', 'flazz'].flatMap((k) =>
+      [Object.assign(document.createElement('i'), { className: `k pk-${k}`, textContent: k === 'tapin' ? 'T' : 'F', title: parkName(k) }), `${pcount[k]}`])));
 
-function renderParking() {
-  const mm = String(month + 1).padStart(2, '0');
-  const ym = `${year}-${mm}`;
-  $('p-title').textContent = dt(`${ym}-01`, { month: 'long', year: 'numeric' });
-  $('p-prev').disabled = $('prev').disabled;
-  $('p-next').disabled = $('next').disabled;
-  if (!pday.startsWith(ym)) pday = ym === today.slice(0, 7) ? today : `${ym}-01`;
-
-  const grid = $('p-grid');
-  const first = toNum(`${ym}-01`);
-  const lead = (new Date(first * 864e5).getUTCDay() + 6) % 7;
-  const monday = toNum('2024-01-01');
-  grid.replaceChildren(...Array.from({ length: 7 }, (_, i) => Object.assign(document.createElement('div'), { className: 'dow', textContent: dow(toIso(monday + i)) })));
-  for (let i = 0; i < lead; i++) grid.append(Object.assign(document.createElement('div'), { className: 'cell blank' }));
-  const count = { tapin: 0, flazz: 0 };
-  for (let n = first; toIso(n).startsWith(ym); n++) {
-    const iso = toIso(n);
-    const kind = parking[iso];
-    if (kind) count[kind]++;
-    const c = document.createElement('button');
-    c.className = `cell pk${kind ? ` ${kind}` : ''}${iso === pday ? ' sel' : ''}${iso === today ? ' today' : ''}`;
-    c.setAttribute('aria-label', `${fmt(iso)}${kind ? `: ${t(kind === 'tapin' ? 'tapIn' : 'flazz')}` : ''}`);
-    c.onclick = () => { pday = iso; renderParking(); };
-    c.append(Object.assign(document.createElement('b'), { textContent: +iso.slice(8) }));
-    grid.append(c);
-  }
-
+  $('p-edit').hidden = !pday;
+  if (!pday) return;
   const cur = parking[pday];
-  $('p-day').textContent = `${fmt(pday)} · ${cur ? t(cur === 'tapin' ? 'tapIn' : 'flazz') : t('parkNone')}`;
+  $('p-day').textContent = `${fmt(pday)} · ${cur ? parkName(cur) : t('parkNone')}`;
   document.querySelectorAll('.pick [data-kind]').forEach((b) => b.classList.toggle('on', b.dataset.kind === cur));
-  // angka muncul setelah ada yang dipilih bulan ini
-  $('p-summary').hidden = !count.tapin && !count.flazz;
-  $('p-summary').replaceChildren(...['tapin', 'flazz'].flatMap((k) =>
-    [Object.assign(document.createElement('i'), { className: `k ${k}` }), `${t(k === 'tapin' ? 'tapIn' : 'flazz')}: ${t('parkCount', count[k])}`]));
 }
 
 function renderSettings() {
@@ -182,13 +166,13 @@ function msg(text, ok, id = 'msg') {
 
 document.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => show(b.dataset.tab)));
 const step = (d) => { month += d; year += Math.floor(month / 12); month = (month + 12) % 12; render(); };
-$('prev').onclick = $('p-prev').onclick = () => step(-1);
-$('next').onclick = $('p-next').onclick = () => step(1);
+$('prev').onclick = () => step(-1);
+$('next').onclick = () => step(1);
 
 // Satu hari satu pilihan: klik yang lain mengganti, klik yang sama menghapus.
 document.querySelectorAll('.pick [data-kind]').forEach((b) => (b.onclick = () => {
   if (parking[pday] === b.dataset.kind) delete parking[pday]; else parking[pday] = b.dataset.kind;
-  savePark(); renderParking();
+  savePark(); renderMonth();
 }));
 $('goto-today').onclick = () => { year = Y0; month = +today.slice(5, 7) - 1; render(); };
 
